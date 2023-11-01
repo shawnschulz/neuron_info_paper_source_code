@@ -5,20 +5,15 @@
 
 
 import scanpy as sc
-import pandas as pd
 from optparse import OptionParser
 
 
 # In[ ]:
-
-
-def prepare_options(parser):
-    """Prepare options parser
-    """
-    parser.add_option("-i", "--input", dest="input_file",
-                      help="Input FILE", metavar="FILE")
-    parser.add_option("-n", "--name", dest="name",
-                      help="filename", metvar="FILENAME")
+parser = OptionParser()
+parser.add_option("-i", "--input", dest="input_file",
+                  help="Input FILE")
+parser.add_option("-n", "--name", dest="name",
+                  help="filename")
 (options, args) = parser.parse_args()
 adata_path = options.input_file
 adata_name = options.name
@@ -81,7 +76,7 @@ n_genes_df = ts_adata.obs[['total_genes', 'supercluster_term']]
 # In[ ]:
 
 
-total_genes_by_cell_type = n_genes_df.groupby('cell_type').mean().T.sort_values('total_genes', axis=1, ascending=False)
+total_genes_by_cell_type = n_genes_df.groupby('supercluster_term').mean().T.sort_values('total_genes', axis=1, ascending=False)
 
 
 # In[ ]:
