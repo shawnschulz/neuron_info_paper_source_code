@@ -79,7 +79,7 @@ for cell_index in range(0, len(adata.obs_names)):
     string_to_write = cell_start
     grepped_transcriptome_string = subprocess.run(["rg", "-A", "1", "-f", rg_args_fn, ref_fasta_path,"|", ">>", out_fasta_fn], capture_output=True)
     grepped_transcriptome_string = grepped_transcriptome_string.stdout.decode()
-    string_to_write += grepped_transcriptome_string + "\n"
+    string_to_write += grepped_transcriptome_string 
     string_to_write += cell_end
     with open(out_fasta_fn, "a") as fa_out:
         fa_out.write(string_to_write)
