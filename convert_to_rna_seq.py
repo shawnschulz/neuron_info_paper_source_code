@@ -2,16 +2,20 @@
 import scanpy as sc 
 import os
 import subprocess
-
+from queue import Queue
+from threading import Thread
+from time import time
+import logging
+#rationale behind threading over multiprocessing is that this is an IO bound task
+#want to save on memory over CPU power
+#(this is actually concurrency vs parallel tasks lol)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 os.chdir("../data")
 
 os.getcwd()
 
-def write_to_file(string, fn):
-    with open(fn, 'w') as file:
-        file.write(string)
-    file.close()
-    return(1)
+
 
 def multiply_lines_with_substring(multi_line_string, substring, n):
     #this is waaaaay too slow
@@ -30,13 +34,12 @@ def utf8len(s):
     return len(s.encode('utf-8'))
 
 adata = sc.read_h5ad("sc_splatter.h5ad")
-
-#testing on just 10 cells for now
-adata = adata[adata.obs_names[0:1]]
+    #testing on just 10 cells for now
+adata = adata[adata.obs_names[0:500]]
 
 ref_fasta_path = "ensembl_annotated_transcriptome.fa"
 
-super_cluster_term = "splatter_one_cell"
+super_cluster_term = "splatter_500"
 dir_name = super_cluster_term + "_fastas"
 subprocess.call(["mkdir", "-p", dir_name])
 
@@ -49,11 +52,7 @@ gene_index_chosen_count=0
 
 subprocess.run(["echo", "", ">", out_fasta_fn])
 
-#should spin up threads and just run all of the cell_indexes in a parallelized queue
-#lets refactor to make this happen
-for cell_index in range(0, len(adata.obs_names)): 
-    print("DEBUG: cell iterations is: {}".format(cell_iteration_count))
-    cell_iteration_count+=1
+def append_expressed_transcripts_for_cell(cell_index):
     print("The current cell index is {}".format(cell_index))
     cell_name = adata.obs_names[cell_index]
 
@@ -65,19 +64,20 @@ for cell_index in range(0, len(adata.obs_names)):
         #should cross check the p-value of expression of the gene, hopefully it's already in the adata
         #we can use that to figure out how likely the gene is to actually be differentially expressed 
         if read_count > 0:
-            gene_index_chosen_count += 1
             print("DEBUG: gene index chosen count is: {}".format(gene_index_chosen_count))
             rg_args = rg_args + ensembl_id + '\n'  
         else:
             print("no reads associated with this transcript")
-            
+
     print("DEBUG: printing rg_args: {}".format(rg_args))
-    rg_args_fn = "temp_rg_args.txt"
-    write_to_file(rg_args, rg_args_fn)
+    rg_args_fn = cell_name + "_temp_rg_args.txt"
+    with open(rg_args_fn, "w") as file:
+        file.write(rg_args)
+        file.close()
     cell_start=super_cluster_term + "_" + cell_name + "_start" +"\n"
     cell_end = super_cluster_term + "_" + cell_name + "_end" + "\n"
     string_to_write = cell_start
-    grepped_transcriptome_string = subprocess.run(["rg", "-A", "1", "-f", rg_args_fn, ref_fasta_path,"|", ">>", out_fasta_fn], capture_output=True)
+    grepped_transcriptome_string = subprocess.run(["rg", "-A", "1", "-f", rg_args_fn, ref_fasta_path], capture_output=True)
     grepped_transcriptome_string = grepped_transcriptome_string.stdout.decode()
     string_to_write += grepped_transcriptome_string 
     string_to_write += cell_end
@@ -88,3 +88,39 @@ for cell_index in range(0, len(adata.obs_names)):
     subprocess.call(["mv", out_fasta_fn, dir_name])
     subprocess.run(["mv", rg_args_fn, "last_rg_args.txt"])
 
+
+
+#should spin up threads and just run all of the cell_indexes in a parallelized queue
+#lets refactor to make this happen
+
+#adata is loaded
+#take the whole list of cell indexes
+#run the process on multiple cells at a time, not reloading adata every time.
+#for cell_index in range(0, len(adata.obs_names)): 
+
+class transcript_worker(Thread):
+    def __init__(self, queue):
+        Thread.__init__(self)
+        self.queue = queue
+    def run(self):
+        while True:
+            cell_index = self.queue.get()
+            try:
+                append_expressed_transcripts_for_cell(cell_index)
+            finally:
+                self.queue.task_done()
+
+ts = time()
+
+queue = Queue()
+
+for thread in range(8):
+    worker = transcript_worker(queue)
+    worker.daemon = True
+    worker.start()
+
+for cell_index in range(0, len(adata.obs_names)):
+    print(cell_index)
+    queue.put(cell_index)
+
+queue.join()
