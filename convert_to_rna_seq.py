@@ -14,12 +14,14 @@ parser = OptionParser()
 parser.add_option("-a", "--adata_name", dest="adata_name")
 parser.add_option("-d", "--data_dir", dest="data_dir")
 parser.add_option("-s", "--super_cluster", dest="super_cluster")
+parser.add_option("-n", "--num_samples", dest="num_samples", help="supply number of cells to sample from h5ad, make sure this number is not higher than obs_names index!")
 
 (options, args) = parser.parse_args()
 
 data_dir = options.data_dir
 adata_name = options.adata_name
 super_cluster = options.super_cluster
+num_samples = int(options.num_samples)
 
 #rationale behind threading over multiprocessing is that this is an IO bound task
 #want to save on memory over CPU power
@@ -28,6 +30,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 os.chdir(data_dir)
 adata = sc.read_h5ad(adata_name)
+if num_samples > len(adata.obs_names):
+    raise IndexError("Please supply a number of samples that is less than or equal to the total!")
+
 super_cluster_term = super_cluster 
 
 def multiply_lines_with_substring(multi_line_string, substring, n):
@@ -50,7 +55,7 @@ def utf8len(s):
 
 obs_names = list(adata.obs_names)
 random.shuffle(obs_names)
-adata = adata[obs_names[0:500]]
+adata = adata[obs_names[0:num_samples]]
 
 ref_fasta_path = "ensembl_annotated_transcriptome.fa"
 
