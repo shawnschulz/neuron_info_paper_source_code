@@ -1,0 +1,89 @@
+ > splatter_one_cell.fa
+Exception in thread Thread-1:
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+Exception in thread Thread-2:
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+Exception in thread Thread-8:
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+Exception in thread Thread-5:
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+Exception in thread Thread-6:
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self.run()
+  File "/home/shawn/Programming/neuron_rna_info_paper/src/convert_to_rna_seq.py", line 106, in run
+    self.run()
+  File "/home/shawn/Programming/neuron_rna_info_paper/src/convert_to_rna_seq.py", line 106, in run
+Exception in thread Thread-7:
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    append_expressed_transcripts_for_cell(cell_index)
+  File "/home/shawn/Programming/neuron_rna_info_paper/src/convert_to_rna_seq.py", line 22, in append_expressed_transcripts_for_cell
+Exception in thread Thread-4:
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self.run()
+  File "/home/shawn/Programming/neuron_rna_info_paper/src/convert_to_rna_seq.py", line 106, in run
+    self.run()
+Exception in thread Thread-3:
+Traceback (most recent call last):
+    self.run()
+    self.run()
+  File "/home/shawn/Programming/neuron_rna_info_paper/src/convert_to_rna_seq.py", line 106, in run
+    cell_name = adata.obs_names[cell_index]
+  File "/home/shawn/Programming/neuron_rna_info_paper/src/convert_to_rna_seq.py", line 106, in run
+  File "/home/shawn/Programming/neuron_rna_info_paper/src/convert_to_rna_seq.py", line 106, in run
+    self.run()
+    append_expressed_transcripts_for_cell(cell_index)
+    append_expressed_transcripts_for_cell(cell_index)
+    append_expressed_transcripts_for_cell(cell_index)
+  File "/home/shawn/Programming/neuron_rna_info_paper/src/convert_to_rna_seq.py", line 106, in run
+    append_expressed_transcripts_for_cell(cell_index)
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    append_expressed_transcripts_for_cell(cell_index)
+  File "/home/shawn/.local/lib/python3.10/site-packages/pandas/core/indexes/base.py", line 5195, in __getitem__
+  File "/home/shawn/Programming/neuron_rna_info_paper/src/convert_to_rna_seq.py", line 22, in append_expressed_transcripts_for_cell
+  File "/home/shawn/Programming/neuron_rna_info_paper/src/convert_to_rna_seq.py", line 22, in append_expressed_transcripts_for_cell
+  File "/home/shawn/Programming/neuron_rna_info_paper/src/convert_to_rna_seq.py", line 22, in append_expressed_transcripts_for_cell
+  File "/home/shawn/Programming/neuron_rna_info_paper/src/convert_to_rna_seq.py", line 22, in append_expressed_transcripts_for_cell
+    append_expressed_transcripts_for_cell(cell_index)
+    result = getitem(key)
+    cell_name = adata.obs_names[cell_index]
+    cell_name = adata.obs_names[cell_index]
+  File "/home/shawn/Programming/neuron_rna_info_paper/src/convert_to_rna_seq.py", line 22, in append_expressed_transcripts_for_cell
+    self.run()
+    cell_name = adata.obs_names[cell_index]
+  File "/home/shawn/Programming/neuron_rna_info_paper/src/convert_to_rna_seq.py", line 22, in append_expressed_transcripts_for_cell
+    cell_name = adata.obs_names[cell_index]
+  File "/home/shawn/Programming/neuron_rna_info_paper/src/convert_to_rna_seq.py", line 106, in run
+    cell_name = adata.obs_names[cell_index]
+  File "/home/shawn/.local/lib/python3.10/site-packages/pandas/core/indexes/base.py", line 5195, in __getitem__
+    cell_name = adata.obs_names[cell_index]
+  File "/home/shawn/.local/lib/python3.10/site-packages/pandas/core/indexes/base.py", line 5195, in __getitem__
+  File "/home/shawn/.local/lib/python3.10/site-packages/pandas/core/indexes/base.py", line 5195, in __getitem__
+    append_expressed_transcripts_for_cell(cell_index)
+  File "/home/shawn/Programming/neuron_rna_info_paper/src/convert_to_rna_seq.py", line 22, in append_expressed_transcripts_for_cell
+  File "/home/shawn/.local/lib/python3.10/site-packages/pandas/core/indexes/base.py", line 5195, in __getitem__
+  File "/home/shawn/.local/lib/python3.10/site-packages/pandas/core/indexes/base.py", line 5195, in __getitem__
+    result = getitem(key)
+    result = getitem(key)
+    result = getitem(key)
+IndexError: only integers, slices (`:`), ellipsis (`...`), numpy.newaxis (`None`) and integer or boolean arrays are valid indices
+    result = getitem(key)
+    result = getitem(key)
+  File "/home/shawn/.local/lib/python3.10/site-packages/pandas/core/indexes/base.py", line 5195, in __getitem__
+IndexError: only integers, slices (`:`), ellipsis (`...`), numpy.newaxis (`None`) and integer or boolean arrays are valid indices
+    cell_name = adata.obs_names[cell_index]
+IndexError: only integers, slices (`:`), ellipsis (`...`), numpy.newaxis (`None`) and integer or boolean arrays are valid indices
+IndexError: only integers, slices (`:`), ellipsis (`...`), numpy.newaxis (`None`) and integer or boolean arrays are valid indices
+  File "/home/shawn/.local/lib/python3.10/site-packages/pandas/core/indexes/base.py", line 5195, in __getitem__
+IndexError: only integers, slices (`:`), ellipsis (`...`), numpy.newaxis (`None`) and integer or boolean arrays are valid indices
+IndexError: only integers, slices (`:`), ellipsis (`...`), numpy.newaxis (`None`) and integer or boolean arrays are valid indices
+    result = getitem(key)
+    result = getitem(key)
+IndexError: only integers, slices (`:`), ellipsis (`...`), numpy.newaxis (`None`) and integer or boolean arrays are valid indices
+IndexError: only integers, slices (`:`), ellipsis (`...`), numpy.newaxis (`None`) and integer or boolean arrays are valid indices
