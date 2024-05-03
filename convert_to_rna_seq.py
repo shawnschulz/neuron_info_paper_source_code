@@ -9,32 +9,6 @@ import logging
 import random
 from optparse import OptionParser
 
-parser = OptionParser()
-
-parser.add_option("-a", "--adata_name", dest="adata_name")
-parser.add_option("-d", "--data_dir", dest="data_dir")
-parser.add_option("-s", "--super_cluster", dest="super_cluster")
-parser.add_option("-n", "--num_samples", dest="num_samples", help="supply number of cells to sample from h5ad, make sure this number is not higher than obs_names index!")
-
-(options, args) = parser.parse_args()
-
-data_dir = options.data_dir
-adata_name = options.adata_name
-super_cluster = options.super_cluster
-num_samples = int(options.num_samples)
-
-#rationale behind threading over multiprocessing is that this is an IO bound task
-#want to save on memory over CPU power
-#(this is actually concurrency vs parallel tasks lol)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-os.chdir(data_dir)
-adata = sc.read_h5ad(adata_name)
-if num_samples > len(adata.obs_names):
-    raise IndexError("Please supply a number of samples that is less than or equal to the total!")
-
-super_cluster_term = super_cluster 
-
 def multiply_lines_with_substring(multi_line_string, substring, n):
     #this is waaaaay too slow
     lines = multi_line_string.split('\n')
@@ -53,24 +27,7 @@ def utf8len(s):
 
     #testing on just 10 cells for now
 
-obs_names = list(adata.obs_names)
-random.shuffle(obs_names)
-adata = adata[obs_names[0:num_samples]]
-
-ref_fasta_path = "ensembl_annotated_transcriptome.fa"
-
-dir_name = super_cluster_term + "_fastas"
-subprocess.call(["mkdir", "-p", dir_name])
-
-
-string_to_write = "" #this string is gonna be REALLY long...
-
-cell_iteration_count=0
-gene_index_chosen_count=0
-
-#subprocess.run(["echo", "", ">", out_fasta_fn])
-
-def append_expressed_transcripts_for_cell(cell_index):
+def append_expressed_transcripts_for_cell(cell_index, adata, super_cluster_term, dir_name):
     cell_name = adata.obs_names[cell_index]
 
     out_fasta_fn =  super_cluster_term + "_" + cell_name + '.fa' 
@@ -101,6 +58,51 @@ def append_expressed_transcripts_for_cell(cell_index):
     subprocess.call(["mv", out_fasta_fn, dir_name])
     subprocess.run(["mv", rg_args_fn, "last_rg_args.txt"])
 
+def main():
+    parser = OptionParser()
+
+    parser.add_option("-a", "--adata_name", dest="adata_name")
+    parser.add_option("-d", "--data_dir", dest="data_dir")
+    parser.add_option("-s", "--super_cluster", dest="super_cluster")
+    parser.add_option("-n", "--num_samples", dest="num_samples", help="supply number of cells to sample from h5ad, make sure this number is not higher than obs_names index!")
+
+    (options, args) = parser.parse_args()
+
+    data_dir = options.data_dir
+    adata_name = options.adata_name
+    super_cluster = options.super_cluster
+    num_samples = int(options.num_samples)
+
+#rationale behind threading over multiprocessing is that this is an IO bound task
+#want to save on memory over CPU power
+#(this is actually concurrency vs parallel tasks lol)
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    logger = logging.getLogger(__name__)
+    os.chdir(data_dir)
+    adata = sc.read_h5ad(adata_name)
+    if num_samples > len(adata.obs_names):
+        raise IndexError("Please supply a number of samples that is less than or equal to the total!")
+
+    super_cluster_term = super_cluster 
+
+
+    obs_names = list(adata.obs_names)
+    random.shuffle(obs_names)
+    adata = adata[obs_names[0:num_samples]]
+
+    ref_fasta_path = "ensembl_annotated_transcriptome.fa"
+
+    dir_name = super_cluster_term + "_fastas"
+    subprocess.call(["mkdir", "-p", dir_name])
+
+
+    string_to_write = "" #this string is gonna be REALLY long...
+
+    cell_iteration_count=0
+    gene_index_chosen_count=0
+
+#subprocess.run(["echo", "", ">", out_fasta_fn])
+
 
 
 #should spin up threads and just run all of the cell_indexes in a parallelized queue
@@ -111,29 +113,32 @@ def append_expressed_transcripts_for_cell(cell_index):
 #run the process on multiple cells at a time, not reloading adata every time.
 #for cell_index in range(0, len(adata.obs_names)): 
 
-class transcript_worker(Thread):
-    def __init__(self, queue):
-        Thread.__init__(self)
-        self.queue = queue
-    def run(self):
-        while True:
-            cell_index = self.queue.get()
-            try:
-                append_expressed_transcripts_for_cell(cell_index)
-            finally:
-                self.queue.task_done()
+    class transcript_worker(Thread):
+        def __init__(self, queue):
+            Thread.__init__(self)
+            self.queue = queue
+        def run(self):
+            while True:
+                cell_index = self.queue.get()
+                try:
+                    append_expressed_transcripts_for_cell(cell_index, adata, super_cluster_term, dir_name)
+                finally:
+                    self.queue.task_done()
 
-ts = time()
+    ts = time()
 
-queue = Queue()
+    queue = Queue()
 
 #SHOVE MORE THREADS IN
-for thread in range(14):
-    worker = transcript_worker(queue)
-    worker.daemon = True
-    worker.start()
+    for thread in range(14):
+        worker = transcript_worker(queue)
+        worker.daemon = True
+        worker.start()
 
-for cell_index in range(0, len(adata.obs_names)):
-    queue.put(cell_index)
+    for cell_index in range(0, len(adata.obs_names)):
+        queue.put(cell_index)
 
-queue.join()
+    queue.join()
+
+if __name__ == "__main__":
+    main()
