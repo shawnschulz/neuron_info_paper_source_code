@@ -59,6 +59,7 @@ def append_expressed_transcripts_for_cell(cell_index, adata, super_cluster_term,
     subprocess.run(["mv", rg_args_fn, "last_rg_args.txt"])
 
 def main():
+
     parser = OptionParser()
 
     parser.add_option("-a", "--adata_name", dest="adata_name")
