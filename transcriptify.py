@@ -60,7 +60,7 @@ def append_expressed_transcripts_for_cell(cell_index, adata, super_cluster_term,
 
 def main():
 
-    parser = OptionParser()
+    parser = OptionParser(description="transcriptify takes an adata and uses a transcriptome reference fasta to construct a fasta file containing read sequences and fasta metadata information for every read detected in cells in the adata." )
 
     parser.add_option("-a", "--adata_name", dest="adata_name")
     parser.add_option("-d", "--data_dir", dest="data_dir")
